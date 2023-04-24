@@ -1,0 +1,257 @@
+---
+title: "PDAC Basal Results"
+author: "Hillary Heiling"
+date: "01/12/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+```{r, message=FALSE, warning=FALSE}
+suppressMessages(suppressWarnings(library(stringr)))
+suppressMessages(suppressWarnings(library(ggplot2)))
+suppressMessages(suppressWarnings(library(reshape2)))
+suppressMessages(suppressWarnings(library(gridExtra)))
+```
+
+
+
+# Case Study Overview - glmmPen\_FA Elastic Net, Cluster Covariates
+
+Results for fitting the PDAC Basal dataset 
+
+Method and covariate combinations:
+
+* $p=110$: glmmPen\_FA, cluster covariates
+
+Penalties:
+
+* Min = 0.05 x max lambda
+
+Alpha: \{0.6, 0.7, 0.8, 0.9, 1.0\}
+
+r estimate: Growth Ratio (GR) estimate OR $r=3$
+
+Result used in paper: Alpha = 0.1, Growth Ratio estimate of $r$
+
+Sensitivity analyses: All other alpha and $r$ comparisons
+
+
+## Basal glmmPen\_FA alpha comparison
+
+```{r}
+# Load glmmPen_FA results
+path = "~/Longleaf/Project2/PDAC_basal_alpha_glmmPen_FA_04/"
+files = list.files(path = path, pattern = ".RData", full.names = TRUE)
+labels = str_c("Alpha_",rep(seq(from = 0.6, to = 1.0, by = 0.1), each = 2),
+               "_r_",rep(c("GR_est","3"), times = 3))
+res_glmmPen_FA = list()
+for(i in 1:length(files)){ 
+  # load output list object
+  load(file = files[i])
+  res_glmmPen_FA[[labels[i]]] = output
+}
+
+```
+
+Estimated $r$ for the Growth Ratio procedure
+
+```{r}
+for(i in seq(from = 1, to = length(res_glmmPen_FA), by = 2)){ # 1:length(res_glmmPen_FA)
+  print(sprintf("%s: r = %i", labels[i], res_glmmPen_FA[[i]]$fit$r_estimation$r))
+}
+```
+
+Time to complete algorithm in hours:
+
+```{r}
+for(i in 1:length(res_glmmPen_FA)){
+  print(sprintf("%s: hours = %.1f", labels[i], res_glmmPen_FA[[i]]$time_mat[,3] / 3600))
+}
+```
+
+### Fixed effects estimates
+
+Number non-zero fixed effects in best model (not including intercept):
+
+```{r}
+for(i in 1:length(res_glmmPen_FA)){
+  print(sprintf("%s: number non-zero fixed effects = %i", labels[i], sum(res_glmmPen_FA[[i]]$fit$fixef[-1] != 0)))
+}
+```
+
+```{r}
+for(i in 1:length(res_glmmPen_FA)){
+  fixef_all = res_glmmPen_FA[[i]]$fit$fixef[-1]
+  fixef_non0 = fixef_all[which((fixef_all != 0))]
+  df = data.frame(fixef = fixef_non0, Cluster = str_sub(names(fixef_non0), start = 2))
+  p = ggplot(data = df) + geom_col(mapping = aes(y = fixef, x = Cluster)) +
+    theme(axis.text.x = element_text(angle = 270)) + # , vjust = 0.5, hjust=1
+    ylab("Coefficient Value") +
+    ggtitle(sprintf("%s fixed effects", labels[i]))
+  print(p)
+}
+
+```
+
+
+### Random Effect Variance Estimates
+
+Number non-zero random effects in best model:
+
+```{r}
+for(i in 1:length(res_glmmPen_FA)){
+  print(sprintf("%s: number non-zero random effects = %i", labels[i],
+                sum(diag(res_glmmPen_FA[[i]]$fit$sigma)[-1] != 0)))
+}
+```
+
+
+Summary of random effect variance estimates:
+
+```{r}
+for(i in 1:length(res_glmmPen_FA)){
+  var_all = diag(res_glmmPen_FA[[i]]$fit$sigma)
+  var_non0 = var_all[which((var_all != 0))]
+  df = data.frame(fit = names(res_glmmPen_FA)[i], fixef = var_non0, 
+                  Cluster = str_sub(names(var_non0), start = 2))
+  print(df)
+}
+
+```
+
+### Warnings
+
+No model fits had any errors
+
+### Cluster Details - Alpha 0.7, Growth Ratio Estimate of r results
+
+```{r}
+load("glmmPen_FA_rank/tree.RData")
+cluster_val = c(21,25,44,45,58,64,70,91)
+for(i in cluster_val){
+  cat("cluster ", i, "\n")
+  print(str_c(names(tree[which(tree == i)]), collapse = ", "))
+}
+length(tree[which(tree %in% cluster_val)])
+```
+
+### Cluster Details - Cluster 75 (alpha = 0.9, r = 3)
+
+```{r}
+load("glmmPen_FA_rank/tree.RData")
+cluster_val = c(75)
+for(i in cluster_val){
+  cat("cluster ", i, "\n")
+  print(str_c(names(tree[which(tree == i)]), collapse = ", "))
+}
+length(tree[which(tree %in% cluster_val)])
+```
+
+# Case Study Overview - glmmPen Elastic Net, Cluster Covariates
+
+Results for fitting the PDAC Basal dataset 
+
+Method and covariate combinations:
+
+* $p=110$: glmmPen, cluster covariates
+
+Penalties:
+
+* Min = 0.05 x max lambda
+
+Alpha: \{0.6, 0.7, 0.8, 0.9, 1.0\}
+
+r estimate: Growth Ratio (GR) estimate OR $r=3$
+
+Result used in paper: Alpha = 0.1, Growth Ratio estimate of $r$
+
+Sensitivity analyses: All other alpha and $r$ comparisons
+
+
+## Basal glmmPen alpha comparison
+
+```{r}
+# Load glmmPen_FA results
+path = "~/Longleaf/Project2/PDAC_basal_alpha_glmmPen_04/"
+files = list.files(path = path, pattern = ".RData", full.names = TRUE)
+labels = str_c("Alpha_",seq(from = 0.6, to = 1.0, by = 0.1))
+res_glmmPen = list()
+for(i in 1:length(files)){ 
+  # load output list object
+  load(file = files[i])
+  res_glmmPen[[labels[i]]] = output
+}
+
+```
+
+Time to complete algorithm in hours:
+
+```{r}
+for(i in 1:length(res_glmmPen)){
+  print(sprintf("%s: hours = %.1f", labels[i], res_glmmPen[[i]]$time_mat[,3] / 3600))
+}
+```
+2 did not finish in 48 hours
+
+### Fixed effects estimates
+
+Number non-zero fixed effects in best model (not including intercept):
+
+```{r}
+for(i in 1:length(res_glmmPen)){
+  print(sprintf("%s: number non-zero fixed effects = %i", labels[i], sum(res_glmmPen[[i]]$fit$fixef[-1] != 0)))
+}
+```
+
+```{r}
+for(i in 1:length(res_glmmPen)){
+  fixef_all = res_glmmPen[[i]]$fit$fixef[-1]
+  fixef_non0 = fixef_all[which((fixef_all != 0))]
+  df = data.frame(fixef = fixef_non0, Cluster = str_sub(names(fixef_non0), start = 2))
+  p = ggplot(data = df) + geom_col(mapping = aes(y = fixef, x = Cluster)) +
+    theme(axis.text.x = element_text(angle = 270)) + # , vjust = 0.5, hjust=1
+    ylab("Coefficient Value") +
+    ggtitle(sprintf("%s fixed effects", labels[i]))
+  print(p)
+}
+
+```
+
+
+### Random Effect Variance Estimates
+
+Number non-zero random effects in best model:
+
+```{r}
+for(i in 1:length(res_glmmPen)){
+  print(sprintf("%s: number non-zero random effects = %i", labels[i],
+                sum(diag(res_glmmPen[[i]]$fit$sigma)[-1] != 0)))
+}
+```
+
+
+Summary of random effect variance estimates:
+
+```{r}
+for(i in 1:length(res_glmmPen)){
+  var_all = diag(res_glmmPen[[i]]$fit$sigma)
+  var_non0 = var_all[which((var_all != 0))]
+  df = data.frame(fit = names(res_glmmPen)[i], fixef = var_non0, 
+                  Cluster = str_sub(names(var_non0), start = 2))
+  print(df)
+}
+
+```
+
+### Warnings
+
+No model fits had any errors
+
+
+
+The End
