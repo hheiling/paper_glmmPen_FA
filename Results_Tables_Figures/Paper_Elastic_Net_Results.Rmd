@@ -247,7 +247,7 @@ p_true = 11
 
 ```{r}
 # Note: For others interested in re-creating the output here, replace the code below with the line:
-# load("Paper_Results/select100_glmmPen_FA.RData")
+# load("Paper_Results/select100_glmmPen_FA_EN03.RData")
 # This will load the 'res' list object with the relevant output
 
 # Path to full simulation results
@@ -260,6 +260,7 @@ sim_type = str_c("cor_",rep(c("0.2","0.4","0.6","CS"),times = 5),
 res = extract(path = path, sims = sims, sim_type = sim_type,
               q = 101, p_true = 11, r_true_vec = 3, 
               trace = 0, beta_true = rep(1, length(sims)))
+save(res, file = "Paper_Results/select100_glmmPen_FA_EN03.RData")
 ```
 
 
@@ -331,7 +332,7 @@ Occurrences of small intercept variance error:
 Summary of absolute values of correlations used in analysis:
 
 ```{r}
-load("~/Longleaf/Project2/Simulation_Results/select100_glmmPen_FA_EN01/sim4/Output_001.RData")
+load(sprintf("%s/sim4/Output_001.RData",path))
 tmp = abs(output$cor_use)
 tmp[lower.tri(tmp)] = NA
 tmp_vec = c(tmp)
