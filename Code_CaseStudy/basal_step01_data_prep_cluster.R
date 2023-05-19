@@ -10,7 +10,7 @@ path_data = "~/Basal_Datasets_2022-09"
 # Specify path to location of any additional supporting information
 path_suppInfo = "~/GitHub/cloud/basal"
 # Specify path to location of 'SubtypingDemo' repo content
-path_SubtypingDemo = "~/GitHub/cloud/SubtypingDemo"
+path_SubtypingDemo = "~/GitHub/cloud/SubtypingDemo_condensed"
 # Save step01 results
 path_save_results = "~/GitHub/cloud/basal/glmmPen_FA_rank"
 
