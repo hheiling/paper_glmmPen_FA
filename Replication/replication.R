@@ -209,7 +209,7 @@ for(i in 1:length(res_glmmPen_FA)){
 ### Cluster Details - Alpha 0.7, Growth Ratio Estimate of r results
 
 
-load("PDAC_materials/tree.RData")
+load(sprintf("%s/tree.RData",path))
 cluster_val = c(21,25,44,45,58,64,70,91)
 for(i in cluster_val){
   cat("cluster ", i, "\n")
@@ -219,7 +219,7 @@ length(tree[which(tree %in% cluster_val)])
 
 # ### Cluster Details - Cluster 75 (alpha = 0.9, r = 3)
 # 
-# load("PDAC_materials/tree.RData")
+# load(sprintf("%s/tree.RData",path))
 # cluster_val = c(75)
 # for(i in cluster_val){
 #   cat("cluster ", i, "\n")
