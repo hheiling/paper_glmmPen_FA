@@ -19,10 +19,10 @@ The folder Replication/ contains RData files in the Replication/Paper_Results/ d
 In order to replicate the tables and content in the paper, run the following R code:
 
 ```
-# Define path that contains the "paper_glmmPen_FA" GitHub repo contents
-path = "~/paper_glmmPen_FA"
+# Define path to the Replication/ folder contents
+path = "~/paper_glmmPen_FA/Replication"
 # Run code
-source(sprintf("%s/Replication/replication.R",path))
+source(sprintf("%s/replication.R",path))
 ```
 
 # Running Simulations
