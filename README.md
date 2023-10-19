@@ -81,11 +81,11 @@ Once all of the simulations are run, the code "combine_sim_results.R" (found wit
 
 The CaseStudyMaterials/ folder contains the following items:
 
-* "basal_step01_data_prep_cluster.R" - this code creates the dataset used in the case study analyses. The procedure includes merging the individual studies together, cleaning the data, calculating the cancer subtype outcomes using the SubtypingDemo_condensed/ folder content, and creating the covariates. The individual data files are not included in this repository at this time, so this code cannot be run directly. However, upon acceptance of our paper, these data files will be provided in the Wiley Online Library. See Section "Case Study Data" for details.
+* "basal_step01_data_prep_metagene.R" - this code creates the dataset used in the case study analyses. The procedure includes merging the individual studies together, cleaning the data, calculating the cancer subtype outcomes using the SubtypingDemo_condensed/ folder content, and creating the covariates. The individual data files are not included in this repository at this time, so this code cannot be run directly. However, upon acceptance of our paper, these data files will be provided in the Wiley Online Library. See Section "Case Study Data" for details.
 * "PDAC_basal.RData" - this RData file contains the output dataset created in "basal_step01_data_prep_cluster.R" and is used in the case study analyses.
 * "basal_step02_fit_alpha_glmmPen_FA.R" - this code performs variable selection on the PDAC_basal.RData dataset using the glmmPen_FA algorithm with elastic net penalization.
 * "basal_step02_fit_alpha_glmmPen.R" - this code performs variable selection on the PDAC_basal.RData dataset using the glmmPen algorithm with elastic net penalization.
-* "compile_casestudy_results.R" - this code takes the results from the "basal_step02_fit" procedures and creates the "PDAC" RData output files given in Replication/Paper_Results/ folder. The "path_sim" and "path_output" arguments may need to be manually adjusted in this file.
+* "compile_casestudy_results.R" - this code takes the results from the "basal_step02_fit" procedures and creates the "PDAC" and "tree" RData output files given in CaseStudyMaterials/ folder. The "path_sim" and "path_output" arguments may need to be manually adjusted in this file.
 
 To run the "basal_step02_fit" procedures, the code files must first have the following arguments manually adjusted:
 
@@ -96,9 +96,9 @@ To run the "basal_step02_fit" procedures, the code files must first have the fol
 The code can be submitted to the computing cluster using the commands outlined below. Users may wish to edit the locations of the ".R" and ".Rout" files.
 
 ```
-sbatch --array=1-10 -N 1 -t 36:00:00 --mem=2g -n 1 --output=alpha_FA_%a.out --wrap="R CMD BATCH basal_step02_fit_alpha_glmmPen_FA_04.R alpha_FA_$SLURM_ARRAY_TASK_ID.Rout"
+sbatch --array=1-10 -N 1 -t 36:00:00 --mem=2g -n 1 --output=alpha_FA_%a.out --wrap="R CMD BATCH basal_step02_fit_alpha_glmmPen_FA.R alpha_FA_$SLURM_ARRAY_TASK_ID.Rout"
 
-sbatch --array=1-5 -N 1 -t 72:00:00 --mem=2g -n 1 --output=alpha_glmmPen_%a.out --wrap="R CMD BATCH basal_step02_fit_alpha_glmmPen_04.R alpha_glmmPen_$SLURM_ARRAY_TASK_ID.Rout"
+sbatch --array=1-5 -N 1 -t 72:00:00 --mem=2g -n 1 --output=alpha_glmmPen_%a.out --wrap="R CMD BATCH basal_step02_fit_alpha_glmmPen.R alpha_glmmPen_$SLURM_ARRAY_TASK_ID.Rout"
 ```
 
 # Case Study Data
