@@ -107,7 +107,19 @@ As discussed in Section "Case Study Materials", we do not include the raw data f
 
 Upon access to the raw data files in the Wiley Online Library, follow the instructions below to recreate the "PDAC_basal.RData" object that is provided in the CaseStudyMaterials/ folder.
 
-...
+Identify the CaseStudyData/ folder. This folder contains:
+* rds files storing list objects that contain the gene expression and sample information within each study
+* Folder Filtering_Info/ that holds additional rds files storing list objects that contain information about which subjects within each study to exclude from analysis
+
+Run the "basal_step01_data_prep_metagene.R" code after making the following manual adjustments:
+* path_data - enter correct path to the available rds data files
+* path_suppInfo - enter correct path to the gene list file (given in CaseStudyMaterials/ folder in this repository)
+* path_SubtypingDemo - enter correct path to the subtyping code (given in CaseStudyMaterials/SubtypingDemo_condensed/ folder in this repository)
+* path_save_results - enter path to where the user wants to save the materials created
+
+The "basal_step01_data_prep_metagene.R" code creates the following objects:
+* PDAC_basal - data.frame object (see CaseStudyMaterials/PDAC_basal.RData file) containing the official data used in the case study analyses for this paper
+* tree - named integer vector (see CaseStudyMaterials/tree.RData) containing the information about which genes are contained within each of the 117 meta-genes 
 
 # Supporting Information Document
 
