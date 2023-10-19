@@ -8,11 +8,11 @@ library(pheatmap) # pheatmap function
 # Specify path to pancreatic cancer datasets (and corresponding additional filtering information)
 path_data = "~/Basal_Datasets_2022-09"
 # Specify path to location of any additional supporting information
-path_suppInfo = "~/GitHub/cloud/basal"
+path_suppInfo = "~/GitHub/cloud/proj2_test/PDAC_materials_revision"
 # Specify path to location of 'SubtypingDemo' repo content
 path_SubtypingDemo = "~/GitHub/cloud/SubtypingDemo_condensed"
 # Save step01 results
-path_save_results = "~/GitHub/cloud/basal/glmmPen_FA_rank"
+path_save_results = "~/GitHub/cloud/proj2_test/PDAC_materials_revision"
 
 list.files(path = path_data, pattern = ".rds")
 # above list.files() output should include the following files:
@@ -298,15 +298,22 @@ table(ex_full$study, ex_full$subtype) # 0 = classical, 1 = basal
 
 #################################################################################################
 # Check correlation among genes
+## Note: Check correlation of rank transformed gene expression, not raw gene expression
 #################################################################################################
 
 head(colnames(ex_full), 10)
 
 # Remove sample information variables, keep gene expression only
 ex_tmp = ex_full[,-c(1:length(sampInfo_keep))]
+# Rank-transform the gene expression for each subject
+ex_tmp_rank = matrix(NA, nrow = nrow(ex_tmp), ncol = ncol(ex_tmp))
+colnames(ex_tmp_rank) = colnames(ex_tmp)
+for(i in 1:nrow(ex_tmp)){
+  ex_tmp_rank[i,] = rank(ex_tmp[i,])
+}
 # Calculate spearman correlations
 ## Examine absolute values
-cor_mat = abs(cor(ex_tmp, method = "spearman"))
+cor_mat = abs(cor(ex_tmp_rank, method = "spearman"))
 cor_mat[lower.tri(cor_mat, diag = TRUE)] = NA
 summary(c(cor_mat))
 library(reshape2)
@@ -315,38 +322,41 @@ df[which(df$value > 0.9),]
 df[which((df$value > 0.8) & (df$value < 0.9)),]
 cor_limit = 0.9
 length(unique(c(df$Var1[which(df$value > cor_limit)], df$Var2[which(df$value > cor_limit)])))
+cor_limit = 0.8
+length(unique(c(df$Var1[which(df$value > cor_limit)], df$Var2[which(df$value > cor_limit)])))
 
 #################################################################################################
 # Combine highly correlated genes into 'meta-genes' through clustering
 #################################################################################################
 
-# library(pheatmap)
+cor_mat = NULL
+df = NULL
 
-# Remove sample information variables, keep gene expression only
-ex_tmp = ex_full[,-c(1:length(sampInfo_keep))]
-# Calculate Spearman correlations
-## Examine absolute values
-cor_mat = abs(cor(ex_tmp, method = "spearman"))
+# Calculate spearman correlations (keep original sign, do not take absolute value like before)
+cor_mat = cor(ex_tmp_rank, method = "spearman")
 # Cluster genes based on their spearman correlations
-pmap = pheatmap(mat = cor_mat)
+pmap = pheatmap::pheatmap(mat = cor_mat)
 # Examine tree, determine reasonable cuts
 plot(pmap$tree_row)
-abline(h=2, col="red", lty=2, lwd=2)
+abline(h=3, col="red", lty=2, lwd=2)
 # Cut the tree: cutree() from 'stats' package
 ## Suggested h value: 1, 2, or 3
 ##    h = height where tree should be cut. (h = 0 --> no cut)
-##    From preliminary examinations, seems h = 2 is most reasonable
-tree = cutree(tree = pmap$tree_row, h = 2)
-length(unique(tree)) # 119 clusters at this height
+##    From preliminary examinations, seems h = 3 is most reasonable
+tree = cutree(tree = pmap$tree_row, h = 3)
+length(unique(tree)) # 117 clusters at this height
+
 # For each group, examine within-cluster correlation
-tree_summary = matrix(0, nrow = length(unique(tree)), ncol = 2)
+## Generally expect this within-cluster correlation to be high, whereas we hope
+##    between-cluster correlation is low (or at least reduced from pre-clustering results)
+tree_summary = matrix(NA, nrow = length(unique(tree)), ncol = 2)
 colnames(tree_summary) = c("min abs cor","size")
 rownames(tree_summary) = str_c("cluster_",unique(tree))
 for(i in unique(tree)){
   idx = which(tree == i)
   genes = names(tree)[idx]
   if(length(idx) > 1){
-    cor_i = abs(cor(ex_tmp[,which(colnames(ex_tmp) %in% genes)], method = "spearman"))
+    cor_i = abs(cor(ex_tmp_rank[,which(colnames(ex_tmp_rank) %in% genes)], method = "spearman"))
     for(j in 1:length(idx)){
       cor_i[j,j] = NA
     }
@@ -360,7 +370,7 @@ for(i in unique(tree)){
 summary(tree_summary)
 tree_summary[which(tree_summary[,1] < 0.3),]
 
-# Given above tree, combine gene expression among clusters and
+# Given above tree, combine raw gene expression among clusters and
 #   evaluate between-cluster correlations
 
 ex_tree = matrix(0, nrow = nrow(ex_tmp), ncol = length(unique(tree)))
@@ -378,11 +388,18 @@ for(i in unique(tree)){
   }
 }
 
-# Examine resulting correlations between clusters
-tmp = abs(cor(ex_tree, method = "spearman"))
+# Examine resulting correlations (absolute value) between clusters
+ex_tree_rank = matrix(NA, nrow = nrow(ex_tree), ncol = ncol(ex_tree))
+colnames(ex_tree_rank) = colnames(ex_tree)
+rownames(ex_tree_rank) = rownames(ex_tree)
+for(i in 1:nrow(ex_tree)){
+  ex_tree_rank[i,] = rank(ex_tree[i,])
+}
+tmp = abs(cor(ex_tree_rank, method = "spearman"))
 for(i in 1:nrow(tmp)){
   tmp[i,i] = NA
 }
+hist(c(tmp))
 tmp = ifelse(tmp > 0.9, 1, 0)
 table(rowSums(tmp, na.rm = TRUE))
 cor_num = rowSums(tmp, na.rm = TRUE)
@@ -393,57 +410,18 @@ for(i in which(cor_num >= 1)){
   x_cor = tmp[i,]
   print(x_cor[which(x_cor == 1)])
 }
-# From above results, decide to:
-## Remove clusters 24, 31, 84, 85, 86, 87, 101
-## Combine clusters 11, 62, 82 into single cluster, labeled "cluster_11"
+# No absolute correlations above 0.9
+# If we switch the threshold to 0.8, we see fewer abs correlations above 0.8 than we did in the 
+#   non-clustered data
 
-# Update clusters, re-examine correlations
-ex_final0 = matrix(0, nrow = nrow(ex_tmp), ncol = length(unique(tree)))
-colnames(ex_final0) = str_c("cluster_",unique(tree))
-rownames(ex_final0) = rownames(ex_tmp)
-for(i in unique(tree)){
-  if(i == 11){
-    tree_idx = which(tree %in% c(11,62,82))
-  }else{
-    tree_idx = which(tree == i)
-  }
-  genes = names(tree)[tree_idx]
-  ex_idx = which(colnames(ex_tmp) %in% genes)
-  if(i %in% c(24,31,84,85,86,87,101,62,82)){
-    ex_final0[,i] = NA
-  }else{
-    if(length(tree_idx) > 1){
-      ex_final0[,i] = rowSums(ex_tmp[,ex_idx])
-    }else{
-      ex_final0[,i] = ex_tmp[,ex_idx]
-    }
-  }
-}
-## Check: No more covariates that have correlation > 0.9
-tmp = abs(cor(ex_final0, method = "spearman"))
-# tmp[1:25,1:25]
-for(i in 1:nrow(tmp)){
-  tmp[i,i] = NA
-}
-tmp = ifelse(tmp > 0.9, 1, 0)
-table(rowSums(tmp, na.rm = TRUE)) # No correlations > 0.9 between clusters, yay!
 
 #################################################################################################
 # Create final dataset, save results
 #################################################################################################
-# Remove the highly correlated clusters
-ex_final = ex_final0[,which(!is.na(ex_final0[1,]))]
-dim(ex_final) # 110 clusters remaining
-# Add back in the relevant sample information,
-#   and rank-transform the gene expression for each subject
-ex_rank = matrix(0, nrow = nrow(ex_final), ncol = ncol(ex_final))
-colnames(ex_rank) = colnames(ex_final)
-rownames(ex_rank) = rownames(ex_full)
-for(i in 1:nrow(ex_final)){
-  ex_rank[i,] = rank(ex_final[i,])
-}
-PDAC_basal = data.frame(ex_full[,c(1:3)], ex_rank)
-dim(apply(ex_final, MARGIN = 1, FUN = rank))
+
+# Combine relevant sample information with the ranked meta-gene (cluster) variables
+PDAC_basal = data.frame(ex_full[,c(1:3)], ex_tree_rank)
+dim(PDAC_basal)
 head(PDAC_basal, 10)
 if(!inherits(PDAC_basal$study,"factor")){
   PDAC_basal$study = factor(PDAC_basal$study)
