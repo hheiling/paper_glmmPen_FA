@@ -1,7 +1,7 @@
 # Introduction and Installation
 This GitHub repository contains the simulation and case study materials used within the paper "Efficient Computation of High-Dimensional Penalized Generalized Linear Mixed Models by Latent Factor Modeling of the Random Effects" by Heiling et al., which describes the glmmPen_FA method. 
 
-The code to run the glmmPen_FA method is provided in the glmmPen R package available on CRAN at https://cran.r-project.org/web/packages/glmmPen/index.html and is also available in the GitHub respository https://github.com/hheiling/glmmPen.
+The code to run the glmmPen_FA method is provided in the glmmPen R package available on CRAN at https://cran.r-project.org/package=glmmPen (https://cran.r-project.org/web/packages/glmmPen/index.html) and is also available in the GitHub respository https://github.com/hheiling/glmmPen.
 
 Install glmmPen R package using the following R code:
 
@@ -14,12 +14,12 @@ This respository contains the code to load the contents of the simulations and c
 
 # Replication of Paper Tables and Content: Simulation and Case Study Output
 
-The folder Replication/ contains RData files in the Replication/Paper_Results/ directory which contain summary results for each set of simulations outlined in the paper as well as the summary results for the case study analyses. The code to replicate the tables and content outlined in the paper is given in the "replication.R" code file.
+The folder Replication/ contains RData files in the Replication/Paper_Results_Revision/ directory which contain summary results for each set of simulations outlined in the paper as well as the summary results for the case study analyses. The code to replicate the tables and content outlined in the paper is given in the "replication.R" code file.
 
 In order to replicate the tables and content in the paper, run the following R code:
 
 ```
-# Define path to the Replication/ folder contents
+# Define path to the Replication/ folder contents, edit as appropriate
 path = "~/paper_glmmPen_FA/Replication"
 # Run code
 source(sprintf("%s/replication.R",path))
@@ -34,12 +34,20 @@ The Simulations/ folder contains the code used to run all of the simulations. Th
 * p=25 penalized logistic mixed effects simulations - glmmPen_FA and glmmPen methods (to compare)
 * p=500 penalized logistic mixed effects simulations - glmmPen_FA method
 * p=100 penalized poisson mixed effects simulations - glmmPen_FA method
-* p=100 elastic net penalized logistic mixed effects simulations - glmmPen_FA method
+* p=100 elastic net (EN) penalized logistic mixed effects simulations, deterministic correlation between predictors (correlations 0.2, 0.4, 0.6) - glmmPen_FA method
+* p=100 elastic net penalized logistic mixed effects simulations, correlation between predictors based on case study data (ENCS) - glmmPen_FA method
+* p=100 penalized logistic mixed effects simulations with alternative Beta (fixed effect) and B matrix (random effect) sizes - glmmPen_FA method
+* p=100 penalized logistic mixed effects simulations with alternative sample size (N) and number of groups (K) - glmmPen_FA method
+* p=100 penalized logistic mixed effects simulations with alternative number of true random effects - glmmPen_FA method
 
 To run the simulations, each code file should be manually modified to adjust the following arguments:
 
 * prefix0 - path to location where simulation results should be stored
 * prefix0_post - path to location where the MCMC posterior samples from the 'full model' (model fit with minimum penalty values) are temporarily stored for use in calculating the BIC-ICQ model selection criteria
+
+Two simulations require additional manual modification of the following arguments 
+* path_data - path to location of case study data, needed within code "revision_select100_glmmPen_FA_ENCS.R" that runs the Elastic Net simulations with correlations based on the case study predictors
+* source() command in line 24 of "revision_alt_num_ranef_glmmPen_FA_02.R" - need to manually update location of "sim_generation_FA_alt.R" code file (available within the Simulations/ folder)
 
 Each file specifies the code needed to simulate a single dataset, perform variable selection on that dataset, and save the relevant results. In order to get all of the simulation results specified in the paper, which cover several simulation conditions and 100 replicates per condition, the code needs to be submitted to a computing cluster to run many replicates in parallel. 
 
@@ -56,10 +64,12 @@ sbatch --array=1-400 -N 1 -t 72:00:00 --mem=2g -n 1 --output=FA_500_%a.out --wra
 
 sbatch --array=1-100 -N 1 -t 36:00:00 --mem=2g -n 1 --output=Pois_%a.out --wrap="R CMD BATCH select100_Poisson_v3.R Pois_$SLURM_ARRAY_TASK_ID.Rout"
 
-sbatch --array=1-2000 -N 1 -t 72:00:00 --mem=2g -n 1 --output=EN_%a.out --wrap="R CMD BATCH select100_glmmPen_FA_EN03.R EN_$SLURM_ARRAY_TASK_ID.Rout"
+sbatch --array=1-2000 -N 1 -t 72:00:00 --mem=2g -n 1 --output=EN_%a.out --wrap="R CMD BATCH select100_glmmPen_FA_EN.R EN_$SLURM_ARRAY_TASK_ID.Rout"
+
+sbatch --array=1-2000 -N 1 -t 72:00:00 --mem=2g -n 1 --output=ENCS_%a.out --wrap="R CMD BATCH revision_select100_glmmPen_FA_ENCS.R EN_$SLURM_ARRAY_TASK_ID.Rout"
 ```
 
-Once all of the simulations are run, the code "combine_sim_results.R" can be used to create the RData output files given in Replication/Paper_Results folder. The "path_sim" and "path_output" arguments may need to be manually adjusted in this file.
+Once all of the simulations are run, the code "combine_sim_results.R" (found within the Replication/ folder) can be used to create the RData output files given in Replication/Paper_Results_Revision folder. The "path_sim" and "path_output" arguments may need to be manually adjusted in this file.
 
 # Case Study Materials
 
