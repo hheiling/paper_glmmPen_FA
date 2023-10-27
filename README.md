@@ -81,11 +81,13 @@ Once all of the simulations are run, the code "combine_sim_results.R" (found wit
 
 The CaseStudyMaterials/ folder contains the following items:
 
-* "basal_step01_data_prep_metagene.R" - this code creates the dataset used in the case study analyses. The procedure includes merging the individual studies together, cleaning the data, calculating the cancer subtype outcomes using the SubtypingDemo_condensed/ folder content, and creating the covariates. The individual data files are not included in this repository at this time, so this code cannot be run directly. However, upon acceptance of our paper, these data files will be provided in the Wiley Online Library. See Section "Case Study Data" for details.
-* "PDAC_basal.RData" - this RData file contains the output dataset created in "basal_step01_data_prep_cluster.R" and is used in the case study analyses.
+* "basal_step01_data_prep_metagene.R" - this code was used to create the dataset used in the case study analyses. The procedure includes merging the individual studies together, cleaning the data, calculating the cancer subtype outcomes using the SubtypingDemo_condensed/ folder content, and creating the covariates. The individual data files are not included in this repository, so this code cannot be run directly. This code is provided for interested readers to review our data processing procedure. This code outputs the "PDAC_basal.RData" and "tree.RData" objects.
+* "PDAC_basal.RData" - data.frame object containing the dataset used in the case study analyses for this paper.
+* "tree.RData" - named integer vector containing the information about which genes are contained within each of the 117 meta-genes
 * "basal_step02_fit_alpha_glmmPen_FA.R" - this code performs variable selection on the PDAC_basal.RData dataset using the glmmPen_FA algorithm with elastic net penalization.
 * "basal_step02_fit_alpha_glmmPen.R" - this code performs variable selection on the PDAC_basal.RData dataset using the glmmPen algorithm with elastic net penalization.
 * "compile_casestudy_results.R" - this code takes the results from the "basal_step02_fit" procedures and creates the "PDAC" and "tree" RData output files given in CaseStudyMaterials/ folder. The "path_sim" and "path_output" arguments may need to be manually adjusted in this file.
+* "v3_20140714_all_filter-14-200-genelist-TumorType_spar250.txt" - 500 member gene list that Moffit et al. (2015) identified as being expressed exclusively in pancreatic tumor cells. This list is given in .
 
 To run the "basal_step02_fit" procedures, the code files must first have the following arguments manually adjusted:
 
@@ -101,25 +103,8 @@ sbatch --array=1-10 -N 1 -t 36:00:00 --mem=2g -n 1 --output=alpha_FA_%a.out --wr
 sbatch --array=1-5 -N 1 -t 72:00:00 --mem=2g -n 1 --output=alpha_glmmPen_%a.out --wrap="R CMD BATCH basal_step02_fit_alpha_glmmPen.R alpha_glmmPen_$SLURM_ARRAY_TASK_ID.Rout"
 ```
 
-# Case Study Data
-
-As discussed in Section "Case Study Materials", we do not include the raw data files in this repository. Once our paper is accepted, these materials will be available in the Wiley Online Library.
-
-Upon access to the raw data files in the Wiley Online Library, follow the instructions below to recreate the "PDAC_basal.RData" object that is provided in the CaseStudyMaterials/ folder.
-
-Identify the CaseStudyData/ folder. This folder contains:
-* rds files storing list objects that contain the gene expression and sample information within each study
-* Folder Filtering_Info/ that holds additional rds files storing list objects that contain information about which subjects within each study to exclude from analysis
-
-Run the "basal_step01_data_prep_metagene.R" code after making the following manual adjustments:
-* path_data - enter correct path to the available rds data files
-* path_suppInfo - enter correct path to the gene list file (given in CaseStudyMaterials/ folder in this repository)
-* path_SubtypingDemo - enter correct path to the subtyping code (given in CaseStudyMaterials/SubtypingDemo_condensed/ folder in this repository)
-* path_save_results - enter path to where the user wants to save the materials created
-
-The "basal_step01_data_prep_metagene.R" code creates the following objects:
-* PDAC_basal - data.frame object (see CaseStudyMaterials/PDAC_basal.RData file) containing the official data used in the case study analyses for this paper
-* tree - named integer vector (see CaseStudyMaterials/tree.RData) containing the information about which genes are contained within each of the 117 meta-genes 
+Citation:
+Moffitt, R. A., Marayati, R., Flate, E. L., Volmar, K. E., Loeza, S. G. H., Hoadley, K. A., Rashid, N. U., Williams, L. A., Eaton, S. C., Chung, A. H., et al. (2015). Virtual microdissection identifies distinct tumor-and stroma-specific subtypes of pancreatic ductal adenocarcinoma. Nature genetics 47, 1168.
 
 # Supporting Information Document
 
