@@ -87,7 +87,7 @@ The CaseStudyMaterials/ folder contains the following items:
 * "basal_step02_fit_alpha_glmmPen_FA.R" - this code performs variable selection on the PDAC_basal.RData dataset using the glmmPen_FA algorithm with elastic net penalization.
 * "basal_step02_fit_alpha_glmmPen.R" - this code performs variable selection on the PDAC_basal.RData dataset using the glmmPen algorithm with elastic net penalization.
 * "compile_casestudy_results.R" - this code takes the results from the "basal_step02_fit" procedures and creates the "PDAC" and "tree" RData output files given in CaseStudyMaterials/ folder. The "path_sim" and "path_output" arguments may need to be manually adjusted in this file.
-* "v3_20140714_all_filter-14-200-genelist-TumorType_spar250.txt" - 500 member gene list that Moffit et al. (2015) identified as being expressed exclusively in pancreatic tumor cells. This list is given in .
+* "v3_20140714_all_filter-14-200-genelist-TumorType_spar250.txt" - 500 member gene list that Moffit et al. (2015) identified as likely to be expressed exclusively in pancreatic tumor cells. 
 
 To run the "basal_step02_fit" procedures, the code files must first have the following arguments manually adjusted:
 
